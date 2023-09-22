@@ -30,10 +30,10 @@ func (q *SQLiteRepository) AddRelation(ctx context.Context, relation *relationen
 }
 
 const getRelationByUserID = `-- name: GetRelationByUserID :list
-SELECT rl.*, t.name as team_name, r.name as rune_name FROM rune_relations as rl 
-LEFT JOIN teams as t ON rl.team_id = t.id 
-LEFT JOIN rune_characteristics as r ON rl.rune_id = r.id 
-WHERE user_id = ? 
+SELECT rl.*, t.name as team_name, r.name as rune_name FROM rune_relations as rl
+LEFT JOIN teams as t ON rl.team_id = t.id
+LEFT JOIN rune_characteristics as r ON rl.rune_id = r.id
+WHERE user_id = ?
 ORDER BY r.name
 `
 

@@ -26,5 +26,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
-      - uses: golangci/golangci-lint-action@v4
-      - uses: pre-commit/action@v4
+      - uses: golangci/golangci-lint-action@v2.5.2
+      - uses: pre-commit/action@v2.0.3

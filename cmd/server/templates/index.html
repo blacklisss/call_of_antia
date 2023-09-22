@@ -1,0 +1,321 @@
+<html>
+<head>
+
+</head>
+<body>
+<h1>
+    {{ .title }}
+</h1>
+
+<div class="form-wrapper">
+    <form id="add-rune-info-form">
+        <div class="row">
+            <div class="col-1-4">
+                <label for="teams">Команды</label>
+                <select id="teams" name="team_id" style="width: 300px; padding: 4px">
+                    <option value="-1">Выбрать команду</option>
+                    {{ range .response.Teams }}
+                    <option value="{{ .ID }}">{{ .Name }}</option>
+                    {{ end }}
+                </select>
+            </div>
+            <div class="col-1-4">
+                <label for="runes">Руны</label>
+                <select id="runes" name="runes_id" multiple style="width: 400px; height: 230px; padding: 3px;">
+                    {{ range .response.Runes }}
+                    <option value="{{ .ID }}">{{ .Name }}</option>
+                    {{ end }}
+                </select>
+            </div>
+
+            <input type="hidden" name="user_id" value="{{ .response.User.ID }}">
+        </div>
+
+        <div class="row">
+            <div class="col-1-12">
+                <input type="submit" value="Отправить">
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="result-wrapper">
+    <div class="row">
+        {{range $index, $element := .response.Result}}
+        <div class="col-20">
+            <h2>{{$index.TeamName}}</h2>
+            <ul data-team_id="{{$index.TeamID}}">
+                {{range $element}}
+                <li class="rune-item" data-rune_id="{{.RuneID}}">{{.Name}}<span class="del-rune" data-id="{{.ID}}">x</span></li>
+                {{end}}
+            </ul>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<div class="question-wrapper">
+    <div class="row">
+        <div class="col-1-4">
+            <label for="runes">Руна для вставки</label>
+            <select id="question-runes">
+                {{ range .response.Runes }}
+                <option value="{{ .ID }}">{{ .Name }}</option>
+                {{ end }}
+            </select>
+            <button id="question-button">Куда можно вставить?</button>
+    </div>
+
+</div>
+
+</div>
+
+<script>
+    const formElem = document.getElementById("add-rune-info-form");
+    const questButtonEl = document.getElementById("question-button");
+    const questSelectEl = document.getElementById("question-runes");
+
+    let teams = {
+        {{ range .response.Teams }}
+            {{.ID}}:[],
+        {{end}}
+    }
+
+    const teamsNamed = {
+        {{ range .response.Teams }}
+            {{.ID}}:{{.Name}},
+        {{end}}
+    }
+
+    let userTeam = document.querySelectorAll(".result-wrapper ul");
+
+    let resultTeam = [];
+
+    userTeam.forEach( item => {
+        let runes = item.querySelectorAll("li");
+        runes.forEach(r_item => {
+            teams[item.dataset.team_id].push(r_item.dataset.rune_id);
+        })
+    });
+
+    questButtonEl.addEventListener("click", e => {
+        e.preventDefault()
+        resultTeam = [];
+
+        userTeam.forEach( item => {
+            item.parentElement.classList.remove('active');
+        });
+
+
+        for (let key of Object.keys(teams)) {
+           if (teams[key].length  === 0) {
+               resultTeam.push(key);
+               continue;
+           }
+
+           let add = true;
+
+           for (let i=0; i < teams[key].length; i++) {
+               if (teams[key][i] === questSelectEl.value) {
+                   add = false;
+                   break;
+               }
+           }
+
+           if (add) {
+               resultTeam.push(key);
+           }
+        }
+
+        console.log(resultTeam);
+        console.log(teamsNamed)
+
+        let output = "Подходящие команды для вставки руны:\n";
+
+        for (let key of Object.keys(teams)) {
+            if(resultTeam.includes(key)) {
+                userTeam.forEach( item => {
+                    if (item.dataset.team_id === key) {
+                        item.parentElement.classList.add('active');
+                    }
+                });
+
+                output += teamsNamed[key]+"\n";
+            }
+        }
+
+        alert(output);
+    });
+
+
+
+
+    formElem.onsubmit = async (e) => {
+        e.preventDefault();
+        if (+formElem.teams.value === -1) {
+            alert("Необходимо выбрать команду!")
+            return;
+        }
+
+        let response = await fetch('/addruneforteam', {
+            method: 'POST',
+            body: new FormData(formElem)
+        });
+
+        let result = await response.json();
+
+        window.location.reload();
+    };
+
+    document.addEventListener('click', async e => {
+        console.log(e.target)
+        if (!e.target.classList.contains('del-rune')) {
+            return
+        }
+
+        if (!confirm('Точно удалить?')) {
+            return
+        }
+
+        let id = +e.target.dataset.id;
+        let response = await fetch('/deleterelationbyid/'+id, {
+            method: 'POST',
+        });
+
+        let result = await response.json();
+
+        if (result === 'ok') {
+            window.location.reload();
+            return
+        }
+
+        alert(response)
+    })
+</script>
+
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    h1 {
+        background-color: bisque;
+        padding: 20px;
+        margin: 0;
+    }
+
+    .result-wrapper, .question-wrapper {
+        padding: 20px;
+    }
+
+    .question-wrapper {
+        margin-top: 30px;
+    }
+
+    .form-wrapper {
+        background-color: #ffffee;
+        padding: 20px;
+    }
+
+    .form-wrapper, .result-wrapper {
+        border-bottom: 1px solid #eee;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .col-20 {
+        flex-basis: 20%;
+    }
+
+    .col-1-1 {
+        flex-basis: calc(100% * (1 / 12));
+    }
+
+    .col-1-2 {
+        flex-basis: calc(100% * (2 / 12));
+    }
+
+    .col-1-3 {
+        flex-basis: calc(100% * (3 / 12));
+    }
+
+    .col-1-4 {
+        flex-basis: calc(100% * (4 / 12));
+    }
+
+    .col-1-5 {
+        flex-basis: calc(100% * (5 / 12));
+    }
+
+    .col-1-6 {
+        flex-basis: calc(100% * (6 / 12));
+    }
+
+    .col-1-7 {
+        flex-basis: calc(100% * (7 / 12));
+    }
+
+    .col-1-8 {
+        flex-basis: calc(100% * (8 / 12));
+    }
+
+    .col-1-9 {
+        flex-basis: calc(100% * (9 / 12));
+    }
+
+    .col-1-10 {
+        flex-basis: calc(100% * (10 / 12));
+    }
+
+    .col-1-11 {
+        flex-basis: calc(100% * (11 / 12));
+    }
+
+    .col-1-12 {
+        flex-basis: calc(100% * (12 / 12));
+    }
+
+    label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 24px;
+    }
+
+    .result-wrapper > div > div {
+        transition: all 0.5s ease;
+    }
+
+    .active {
+        background-color: aquamarine;
+        transition: all 0.3s ease;
+    }
+
+    .rune-item {
+        position: relative;
+    }
+
+    .del-rune {
+        position: absolute;
+        right: 0;
+        top: 0;
+        display: none;
+
+        cursor: pointer;
+    }
+
+    .rune-item:hover .del-rune{
+        display: block;
+    }
+
+    .rune-item:hover {
+        background-color: #eeeeee;
+    }
+</style>
+
+</body>
+</html>

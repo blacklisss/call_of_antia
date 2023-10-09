@@ -12,6 +12,7 @@ import (
 	"antia/internal/util"
 	"context"
 	"database/sql"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -21,8 +22,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var configPath = flag.String("config", "./../..", "path to configuration file")
+
 func main() {
-	config, err := util.LoadConfig("./../..")
+	flag.Parse()
+
+	config, err := util.LoadConfig(*configPath)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot load config")
 	}

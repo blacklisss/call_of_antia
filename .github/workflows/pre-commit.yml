@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build
-        run: go build -o ./antia
+        run: go build -o ./antia ./cmd/server/
       - name: Run the API and integration tests
         run: |
           ./antia &

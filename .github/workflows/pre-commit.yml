@@ -25,6 +25,11 @@ jobs:
         run: go test ./... -v -covermode=count
   integration:
     needs: [go-mod]
+    strategy:
+      matrix:
+        go-version: [ 1.21.x ]
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Build

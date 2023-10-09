@@ -12,8 +12,9 @@ type CreateUserParams struct {
 	Name sql.NullString `json:"name"`
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.35.2 --name=UserStore
 type UserStore interface {
-	CreateUser(ctx context.Context, args *CreateUserParams) (*userentity.User, error)
+	CreateUser(ctx context.Context, args *CreateUserParams) error
 	GetUserByID(ctx context.Context, id uint64) (*userentity.User, error)
 	DeleteUser(ctx context.Context, id uint64) error
 }
@@ -28,13 +29,13 @@ func NewUsers(ustore UserStore) *Users {
 	}
 }
 
-func (us *Users) CreateUser(ctx context.Context, args *CreateUserParams) (*userentity.User, error) {
-	user, err := us.ustore.CreateUser(ctx, args)
+func (us *Users) CreateUser(ctx context.Context, args *CreateUserParams) error {
+	err := us.ustore.CreateUser(ctx, args)
 	if err != nil {
-		return nil, fmt.Errorf("create user error: %w", err)
+		return fmt.Errorf("create user error: %w", err)
 	}
 
-	return user, nil
+	return nil
 }
 
 func (us *Users) GetUserByID(ctx context.Context, id uint64) (*userentity.User, error) {

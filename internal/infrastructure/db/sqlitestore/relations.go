@@ -4,7 +4,10 @@ import (
 	"antia/internal/entities/relationentity"
 	"antia/internal/usecases/app/repos/relationrepo"
 	"context"
+	"database/sql"
 	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 var _ relationrepo.RelationStore = &SQLiteRepository{}
@@ -14,12 +17,16 @@ INSERT INTO rune_relations (user_id, team_id, rune_id) VALUES (?,?,?)
 `
 
 func (q *SQLiteRepository) AddRelation(ctx context.Context, relation *relationentity.Relation) error {
-	fmt.Printf("%v\n", relation)
 	stmt, err := q.db.Prepare(addRelation)
 	if err != nil {
 		return err
 	}
-	defer stmt.Close()
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			log.Err(fmt.Errorf("Relations.AddRelation error: %w", err))
+		}
+	}(stmt)
 
 	_, err = stmt.ExecContext(ctx, relation.UserID, relation.TeamID, relation.RuneID)
 	if err != nil {
@@ -42,14 +49,19 @@ func (q *SQLiteRepository) GetRelationByUserID(ctx context.Context, userID uint6
 	if err != nil {
 		return nil, err
 	}
-	defer stmt.Close()
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			log.Err(fmt.Errorf("Relations.GetRelationByUserID error: %w", err))
+		}
+	}(stmt)
 
 	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	items := []*relationentity.NamedRelation{}
+	var items []*relationentity.NamedRelation
 	for rows.Next() {
 		var i relationentity.NamedRelation
 
@@ -81,7 +93,12 @@ func (q *SQLiteRepository) DeleteRelationByID(ctx context.Context, id uint64) er
 	if err != nil {
 		return err
 	}
-	defer stmt.Close()
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			log.Err(fmt.Errorf("Relations.DeleteRelationByID error: %w", err))
+		}
+	}(stmt)
 
 	_, err = stmt.ExecContext(ctx, id)
 	if err != nil {

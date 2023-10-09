@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.35.2 --name=TeamStore
 type TeamStore interface {
 	GetTeams(ctx context.Context) ([]*teamentity.Team, error)
 }

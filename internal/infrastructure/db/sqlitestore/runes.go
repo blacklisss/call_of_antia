@@ -4,6 +4,10 @@ import (
 	"antia/internal/entities/runeentity"
 	"antia/internal/usecases/app/repos/runerepo"
 	"context"
+	"database/sql"
+	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 var _ runerepo.RuneStore = &SQLiteRepository{}
@@ -17,9 +21,14 @@ func (q *SQLiteRepository) GetRunes(ctx context.Context) ([]*runeentity.Rune, er
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Err(fmt.Errorf("Runes.GetRunes error: %w", err))
+		}
+	}(rows)
 
-	items := []*runeentity.Rune{}
+	var items []*runeentity.Rune
 	for rows.Next() {
 		var i runeentity.Rune
 		if err := rows.Scan(

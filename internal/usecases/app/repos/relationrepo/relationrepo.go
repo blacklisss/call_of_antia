@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.35.2 --name=RelationStore
 type RelationStore interface {
 	AddRelation(ctx context.Context, relation *relationentity.Relation) error
 	GetRelationByUserID(ctx context.Context, userID uint64) ([]*relationentity.NamedRelation, error)

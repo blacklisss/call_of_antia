@@ -15,5 +15,5 @@ func NewSQLiteRepository(db *sql.DB) *SQLiteRepository {
 }
 
 func (srepo *SQLiteRepository) Close() {
-	srepo.db.Close()
+	_ = srepo.db.Close()
 }

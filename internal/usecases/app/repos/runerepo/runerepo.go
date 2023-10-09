@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.35.2 --name=RuneStore
 type RuneStore interface {
 	GetRunes(ctx context.Context) ([]*runeentity.Rune, error)
 }

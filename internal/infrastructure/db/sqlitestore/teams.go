@@ -4,6 +4,10 @@ import (
 	"antia/internal/entities/teamentity"
 	"antia/internal/usecases/app/repos/teamrepo"
 	"context"
+	"database/sql"
+	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 var _ teamrepo.TeamStore = &SQLiteRepository{}
@@ -17,9 +21,14 @@ func (q *SQLiteRepository) GetTeams(ctx context.Context) ([]*teamentity.Team, er
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Err(fmt.Errorf("Teams.GetTeams error: %w", err))
+		}
+	}(rows)
 
-	items := []*teamentity.Team{}
+	var items []*teamentity.Team
 	for rows.Next() {
 		var i teamentity.Team
 		if err := rows.Scan(

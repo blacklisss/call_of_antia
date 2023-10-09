@@ -22,7 +22,7 @@ func TestDirExists(t *testing.T) {
 	}
 
 	// Create a directory
-	os.Mkdir(dirName, os.ModePerm)
+	_ = os.Mkdir(dirName, os.ModePerm)
 	defer os.RemoveAll(dirName)
 
 	// Test existing directory

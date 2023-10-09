@@ -21,6 +21,8 @@ jobs:
         run: |
           go mod tidy
           git diff --exit-code go.mod
+      - name: Unit tests
+        run: go test ./... -v -covermode=count
   pre-commit:
     runs-on: ubuntu-latest
     steps:

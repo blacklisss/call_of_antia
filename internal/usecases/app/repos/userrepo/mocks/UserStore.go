@@ -17,29 +17,17 @@ type UserStore struct {
 }
 
 // CreateUser provides a mock function with given fields: ctx, args
-func (_m *UserStore) CreateUser(ctx context.Context, args *userrepo.CreateUserParams) (*userentity.User, error) {
+func (_m *UserStore) CreateUser(ctx context.Context, args *userrepo.CreateUserParams) error {
 	ret := _m.Called(ctx, args)
 
-	var r0 *userentity.User
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *userrepo.CreateUserParams) (*userentity.User, error)); ok {
-		return rf(ctx, args)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, *userrepo.CreateUserParams) *userentity.User); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *userrepo.CreateUserParams) error); ok {
 		r0 = rf(ctx, args)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*userentity.User)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *userrepo.CreateUserParams) error); ok {
-		r1 = rf(ctx, args)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // DeleteUser provides a mock function with given fields: ctx, id
